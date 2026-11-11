@@ -1,0 +1,119 @@
+
+import csv
+import os
+from datetime import datetime
+
+FILE = "transactions.csv"
+
+SERVICES = {
+    "1": "Printing",
+    "2": "Photocopying",
+    "3": "Typing",
+    "4": "Scanning",
+    "5": "Other Services"
+}
+
+
+def save_transaction():
+    print("\n--- NEW CUSTOMER TRANSACTION ---")
+
+    customer = input("Customer name: ").strip()
+
+    if not customer:
+        print("Please enter a customer name.")
+        return
+
+    print("\nAvailable services:")
+    for number, service in SERVICES.items():
+        print(f"{number}. {service}")
+
+    choice = input("Choose service: ").strip()
+
+    if choice not in SERVICES:
+        print("Invalid service selection.")
+        return
+
+    try:
+        amount = float(input("Enter amount (KES): "))
+
+        if amount <= 0:
+            print("Amount must be greater than zero.")
+            return
+
+    except ValueError:
+        print("Please enter a valid amount.")
+        return
+
+    file_exists = os.path.exists(FILE)
+
+    with open(FILE, "a", newline="") as file:
+        writer = csv.writer(file)
+
+        if not file_exists or os.path.getsize(FILE) == 0:
+            writer.writerow([
+                "Date", "Customer", "Service", "Amount"
+            ])
+
+        writer.writerow([
+            datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            customer,
+            SERVICES[choice],
+            amount
+        ])
+
+    print("Transaction saved successfully!")
+
+
+def view_transactions():
+    print("\n--- CUSTOMER TRANSACTIONS ---")
+
+    if not os.path.exists(FILE):
+        print("No transactions recorded yet.")
+        return
+
+    with open(FILE, "r", newline="") as file:
+        reader = csv.reader(file)
+        for row in reader:
+            print(" | ".join(row))
+
+
+def calculate_income():
+    total = 0.0
+
+    if os.path.exists(FILE):
+        with open(FILE, "r", newline="") as file:
+            reader = csv.DictReader(file)
+
+            for row in reader:
+                total += float(row["Amount"])
+
+    print(f"\nTotal recorded income: KES {total:.2f}")
+
+
+def main():
+    while True:
+        print("\n==============================")
+        print(" CYBER CAFE MANAGEMENT SYSTEM")
+        print("==============================")
+        print("1. Record customer transaction")
+        print("2. View transactions")
+        print("3. Calculate total income")
+        print("4. Exit")
+
+        choice = input("Select an option: ").strip()
+
+        if choice == "1":
+            save_transaction()
+        elif choice == "2":
+            view_transactions()
+        elif choice == "3":
+            calculate_income()
+        elif choice == "4":
+            print("Thank you for using the system!")
+            break
+        else:
+            print("Invalid option. Try again.")
+
+
+if __name__ == "__main__":
+    main()
